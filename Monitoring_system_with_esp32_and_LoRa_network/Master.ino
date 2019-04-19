@@ -22,10 +22,6 @@
 const String QUICK_START = "d:quickstart:arduino:";
 
 //No DEVICE_ID você deve mudar para um id único
-//Aqui nesse exemplo utilizamos o MAC Address
-//do dispositivo que estamos utilizando
-//Servirá como identificação no site
-//https://quickstart.internetofthings.ibmcloud.com
 const String DEVICE_ID = "F8DA0C84DAAF";
 
 //Concatemos o id do quickstart com o id do nosso
@@ -40,7 +36,7 @@ WiFiClient wifiClient;
 PubSubClient client(MQTT_SERVER, 1883, wifiClient);
 
 //Intervalo entre os envios
-#define INTERVAL 2000
+#define INTERVAL 10000
 
 //Tempo do último envio
 long lastSendTime = 0;
@@ -56,7 +52,7 @@ void setup(){
   setupLoRa();
 
   display.clear();
-  display.drawString(0, 0, "Gateway start");
+  display.drawString(23, 25, "Gateway ON");
   display.display();
   //Conectamos à rede WiFi
   setupWiFi();
@@ -158,20 +154,16 @@ void showData(){
   //Mostra no display os dados e o tempo que a operação demorou
 
   Serial.println("Status sensores: ");
-  Serial.println(String(data.humidityGround) + "%");
-  //Serial.println(String(data.humidityGroundDig) + "%");
-  Serial.println(String(data.humidityAir) + "%");
-  Serial.println(String(data.temperatureAir) + " C");
-
-
+  Serial.println(String(data.humidityGround) + "% de úmidade no solo");
+ 
   //Mostra no display dados recebidos
   display.setFont(ArialMT_Plain_10);
   display.clear();
-  display.drawString(0, 0, "Status sensores");
-  display.drawString(0, 15,  String(data.humidityGround) + "%");
-  //display.drawString(0, 15, String(data.humidityGroundDig) + "%");
-  display.drawString(0, 30, String(data.humidityAir) + "%");
-  display.drawString(0, 45, String(data.temperatureAir) + " C");
+  display.drawString(38, 0, "System ON");
+  display.drawString(16, 13, "Informations received");
+  display.drawString(33, 26, "Umidade solo:");
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(40, 43,  String(data.humidityGround) + "%");
   display.display();
 }
 
@@ -182,12 +174,6 @@ String createJsonString() {
     json+= "\"d\": {";
       json+="\"humidityGround\":";
       json+=String(data.humidityGround);
-      json+=",";
-      json+="\"humidityAir\":";
-      json+=String(data.humidityAir);
-      json+=",";
-      json+="\"temperatureAir\":";
-      json+=String(data.temperatureAir);
     json+="}";
   json+="}";
   return json;
