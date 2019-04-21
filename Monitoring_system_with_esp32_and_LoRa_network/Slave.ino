@@ -36,42 +36,12 @@ void setup(){
   //Chama a configuração inicial do LoRa
   setupLoRa();
 
-  //Inicilaizando dht
-  dht.begin();
-
-  //0x76 se pino SDO do sensor estiver no GND
-  //0x77 se pino SDO do sensor estiver no 3.3v 
-//  if (!dht.begin(0x76))
-//  {
-//    Serial.println("Sensor não encontrado");
-//    display.clear();
-//    display.drawString(0, 0, "Sensor não encontrado");
-//    display.display();
-//    while(1);
-//  }
-
   display.clear();
   display.drawString(10, 20, "EndPoint start");
   display.display();
 }
 
 void loop(){
-  //Tenta ler o pacote
-  int packetSize = LoRa.parsePacket();
-
-  //Verifica se o pacote possui a quantidade de caracteres que esperamos
-  if (packetSize == GETDATA.length())
-  {
-    String received = "";
-
-    //Armazena os dados do pacote em uma string
-    while(LoRa.available())
-    {
-      received += (char) LoRa.read();
-    }
-
-    if(received.equals(GETDATA))
-    {
       //Faz a leitura dos dados
       Data data = readData();
       Serial.println("Criando pacote para envio");
@@ -82,8 +52,7 @@ void loop(){
       //Finaliza e envia o pacote
       LoRa.endPacket();
       showSentData(data);
-    }
-  }
+  delay(5000);
 }
 
 //Função onde se faz a leitura dos dados 
@@ -93,29 +62,9 @@ Data readData()
   // váriavél que recebe valor vindo do sensor de solo
   float umidadePorcentual;
   umidadePorcentual = analogRead(Sen_analog);
+  Serial.print(umidadePorcentual);
   //convertendo valor recebido em porcentagem
   data.humidityGround = 100 * ((4095 - umidadePorcentual) / 4095);
-  //data.humidityGroundDig = digitalRead(MQ_dig);
-  
-  // lendo DHT 
-  // Faz a leitura da umidade
-//  float value;
-//  value = dht.readTemperature();
-//  Serial.println(String(value) + " T");
-//  //Se o valor for válido
-//  if(!isnan(value)){
-//    //Armazena o novo valor da umidade
-//    data.humidityAir = value;
-//  }
-//  
-//  //Faz a leitura da temperatura
-//  value = dht.readHumidity();
-//  Serial.println(String(value) + " H");
-//  //Se o valor lido é válido
-//  if(!isnan(value)){
-//    //Armazena o novo valor da temperatura
-//    data.temperatureAir = value;
-//  }
   
   return data;
 }

@@ -4,7 +4,7 @@
 #include <SSD1306.h>
 
 //Comente ou remova para compilar o Gatway
-//#define MASTER
+#define MASTER
 
 #define RST 14  // GPIO14 RESET
 #define DI00 26 // GPIO26 IRQ(Interrupt Request)

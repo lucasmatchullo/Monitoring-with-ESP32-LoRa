@@ -5,10 +5,10 @@
 #include <WiFi.h>
 
 //Substitua pelo SSID da sua rede
-#define SSID "VIVOFIBRA-B7C0"
+#define SSID "Sol.net"
 
 //Substitua pela senha da sua rede
-#define PASSWORD "72233FB7C0"
+#define PASSWORD "Alessandra."
 
 //Server MQTT que iremos utlizar
 #define MQTT_SERVER "quickstart.messaging.internetofthings.ibmcloud.com"
@@ -45,6 +45,7 @@ long lastSendTime = 0;
 Data data;
 
 void setup(){
+  //Definindo velocidade comunicação serial
   Serial.begin(115200);
   //Chama a configuração inicial do display
   setupDisplay();
@@ -54,18 +55,34 @@ void setup(){
   display.clear();
   display.drawString(23, 25, "Gateway ON");
   display.display();
-  //Conectamos à rede WiFi
-  setupWiFi();
+  //Conectando à rede WiFi
+  conectWiFi();
+  //Cenetando ao Broker
   connectMQTTServer();
+}
+
+void loop(){
+
+  //Verificando conexão com Servidor
+  if (!client.connected()) {
+   reconnectMQTT();
+  }
+  //Verificando conexão Wi-Fi
+  recconectWiFi();
+
+  client.loop();
+
+  //Verificamos se há pacotes para recebermos
+  receive();
 }
 
 //Função responsável por conectar ao server MQTT
 void connectMQTTServer() {
-  Serial.println("Connecting to MQTT Server...");
+  Serial.println("Conectando ao Broker via MQTT...");
   //Se conecta ao id que definimos
   if (client.connect(CLIENT_ID.c_str())) {
     //Se a conexão foi bem sucedida
-    Serial.println("connected");
+    Serial.println("conectado");
   } else {
     //Se ocorreu algum erro
     Serial.print("error = ");
@@ -74,9 +91,10 @@ void connectMQTTServer() {
 }
 
 //Função responsável por conectar à rede WiFi
-void setupWiFi() {
+void conectWiFi() {
+  delay(10);
   Serial.println();
-  Serial.print("Connecting to ");
+  Serial.println("Conectando em " + String(SSID));
   Serial.print(SSID);
 
   //Manda o esp se conectar à rede através
@@ -90,30 +108,29 @@ void setupWiFi() {
   }
 
   //Se chegou aqui é porque conectou
-  Serial.println("");
-  Serial.println("WiFi connected");
+  Serial.println();
+  Serial.print("Conectado em " + String(SSID) + " | Endereço IP: ");
+  Serial.println(WiFi.localIP());
 }
 
-void loop(){
-  //Se passou o tempo definido em INTERVAL desde o último envio
-  if (millis() - lastSendTime > INTERVAL){
-    //Marcamos o tempo que ocorreu o último envio
-    lastSendTime = millis();
-    //Envia o pacote para informar ao Slave que queremos receber os dados
-    send();
-  }
-
-  //Verificamos se há pacotes para recebermos
-  receive();
+void reconnectMQTT() {
+ while (!client.connected()) {
+   Serial.println("Tentando se conectar ao Broker MQTT: " + String(MQTT_SERVER));
+   if (client.connect(MQTT_SERVER)) {
+     Serial.println("Conectado");
+   } else {
+     Serial.println("Falha ao Reconectar");
+     Serial.println("Tentando se reconectar em 2 segundos");
+     delay(2000);
+   }
+ }
 }
 
-void send(){
-  //Inicializa o pacote
-  LoRa.beginPacket();
-  //Envia o que está contido em "GETDATA"
-  LoRa.print(GETDATA);
-  //Finaliza e envia o pacote
-  LoRa.endPacket();
+void recconectWiFi() {
+ while (WiFi.status() != WL_CONNECTED) {
+   delay(100);
+   Serial.print(".");
+ }
 }
 
 void receive(){
@@ -147,13 +164,8 @@ void receive(){
 }
 
 void showData(){
-  //Tempo que demorou para o Master criar o pacote, enviar o pacote,
-  //o Slave receber, fazer a leitura, criar um novo pacote, enviá-lo
-  //e o Master receber e ler
-  String waiting = String(millis() - lastSendTime);
-  //Mostra no display os dados e o tempo que a operação demorou
 
-  Serial.println("Status sensores: ");
+  Serial.println("Status sensor: ");
   Serial.println(String(data.humidityGround) + "% de úmidade no solo");
  
   //Mostra no display dados recebidos
@@ -172,7 +184,7 @@ void showData(){
 String createJsonString() {
   String json = "{";
     json+= "\"d\": {";
-      json+="\"humidityGround\":";
+      json+="\"Umidade do solo\":";
       json+=String(data.humidityGround);
     json+="}";
   json+="}";
